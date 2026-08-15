@@ -14,7 +14,6 @@ interface AuthContextType {
   loginAsPresident: () => void;
   logout: () => void;
   completePasswordChange: () => void;
-  switchRole: (role: UserRole) => void; // Demo only
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,12 +21,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const AUTH_STORAGE_KEY = 'taras_v2_auth_user';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Starts logged out by default unless a valid session exists in localStorage
   const [user, setUser] = useState<User | null>(() => {
     try {
       const saved = localStorage.getItem(AUTH_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : PRESIDENT_USER;
+      return saved ? JSON.parse(saved) : null;
     } catch {
-      return PRESIDENT_USER;
+      return null;
     }
   });
 
@@ -42,17 +42,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   const login = async (username: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    const cleanUser = username.trim().toLowerCase();
+    const cleanPass = password.trim();
+
     // President login
-    if (username.toLowerCase() === 'president@taras.edu' || username.toLowerCase() === 'president') {
-      if (password === 'president@taras' || password === 'taras2026' || password === 'admin') {
+    if (cleanUser === 'president@taras.edu' || cleanUser === 'president' || cleanUser === 'admin') {
+      if (cleanPass === 'president@taras' || cleanPass === 'taras2026' || cleanPass === 'admin') {
         setUser(PRESIDENT_USER);
         setMustChangePassword(false);
         return { success: true };
       }
-      return { success: false, error: 'Invalid credentials.' };
+      return { success: false, error: 'Invalid President password.' };
     }
 
-    // Student login: username = register number, password = DOB or new password
+    // Student login: username = register number, password = DOB or changed password
     const account = apiService.verifyLogin(username, password);
     if (!account) {
       return { success: false, error: 'Invalid Register Number or Password.' };
@@ -94,14 +97,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Demo switcher — only President in production
-  const switchRole = (newRole: UserRole) => {
-    if (newRole === 'PRESIDENT') {
-      setUser(PRESIDENT_USER);
-      setMustChangePassword(false);
-    }
-  };
-
   const role: UserRole = user?.role || 'STUDENT';
 
   return (
@@ -117,7 +112,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loginAsPresident,
         logout,
         completePasswordChange,
-        switchRole,
       }}
     >
       {children}
