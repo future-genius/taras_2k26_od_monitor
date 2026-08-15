@@ -14,13 +14,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => 
 
   return (
     <div className="flex h-screen bg-taras-50 overflow-hidden font-sans">
-      {/* Desktop Sidebar */}
+      {/* Desktop Sidebar – hidden on mobile, visible md+ */}
       <Sidebar />
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer Overlay */}
       <MobileNav isOpen={isMobileNavOpen} onClose={() => setIsMobileNavOpen(false)} />
 
-      {/* Main Workspace Area */}
+      {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Header
           title={title}
@@ -28,8 +28,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, title, subtitle }) => 
           onOpenMobileNav={() => setIsMobileNavOpen(true)}
         />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto space-y-6">
+        {/* Scrollable page content */}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-5 lg:p-8">
+          <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
             {children}
           </div>
         </main>

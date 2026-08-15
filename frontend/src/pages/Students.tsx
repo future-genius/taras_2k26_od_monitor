@@ -98,18 +98,8 @@ export const Students: React.FC = () => {
             <span className="font-semibold text-taras-800">ECE Department</span>
           </div>
 
-          {/* Desktop Table */}
-          <div className="hidden sm:block">
-            <StudentTable
-              students={students}
-              onSelectStudent={setSelectedStudent}
-              onEditStudent={handleOpenEditModal}
-              onDeactivateStudent={handleOpenDeactivateModal}
-            />
-          </div>
-
-          {/* Mobile Cards */}
-          <StudentCardList
+          {/* Unified Student Table for All Screen Sizes */}
+          <StudentTable
             students={students}
             onSelectStudent={setSelectedStudent}
             onEditStudent={handleOpenEditModal}
