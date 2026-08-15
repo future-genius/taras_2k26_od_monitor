@@ -20,9 +20,11 @@ import {
 } from 'lucide-react';
 
 export const Settings: React.FC = () => {
-  const { privacySettings, updatePrivacySettings, allStudents, managedEvents, dailySummaries } = useStudents();
+  const { privacySettings, updatePrivacySettings, allStudents, managedEvents, dailySummaries, clearAllStudentsAndODData } = useStudents();
   const { isPresident, user } = useAuth();
   const { showToast } = useToast();
+  const [isClearing, setIsClearing] = useState(false);
+  const [showConfirmClear, setShowConfirmClear] = useState(false);
 
   // Local editable settings
   const [symposiumConfig, setSymposiumConfig] = useState({
@@ -286,7 +288,70 @@ export const Settings: React.FC = () => {
           </div>
         </div>
 
-        {/* 4. President Account Status */}
+        {/* 4. Danger Zone: Wipe Student & OD Records */}
+        <div className="bg-white p-6 rounded-2xl border border-rose-200 shadow-sm space-y-4">
+          <div className="flex items-center gap-3 border-b border-rose-100 pb-4">
+            <div className="p-2.5 rounded-xl bg-rose-50 text-rose-700">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-rose-950">Reset / Purge Student &amp; Attendance Records</h3>
+              <p className="text-xs text-rose-700">
+                Permanently delete all enrolled student profiles, authentication credentials, and daily OD records.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-rose-50/50 border border-rose-200 text-xs">
+            <div>
+              <p className="font-bold text-rose-950 text-sm">Clear Student Roster &amp; Daily OD Data</p>
+              <p className="text-rose-700 text-[11px] mt-0.5">
+                Current data: {allStudents.length} Students • {dailySummaries.length} Daily OD Sessions
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowConfirmClear(true)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-sm transition-colors shrink-0"
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span>Clear Student &amp; OD Data</span>
+            </button>
+          </div>
+
+          {showConfirmClear && (
+            <div className="p-4 bg-rose-100 border border-rose-300 rounded-xl space-y-3 animate-fade-in text-xs text-rose-950">
+              <p className="font-bold">⚠️ Are you absolutely sure?</p>
+              <p>
+                This will delete all student records and daily OD attendance logs from both the cloud database and local device storage.
+              </p>
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  disabled={isClearing}
+                  onClick={async () => {
+                    setIsClearing(true);
+                    await clearAllStudentsAndODData();
+                    setIsClearing(false);
+                    setShowConfirmClear(false);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-rose-700 hover:bg-rose-800 text-white font-bold transition-colors disabled:opacity-50"
+                >
+                  {isClearing ? 'Deleting...' : 'Yes, Delete All Student & OD Data'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmClear(false)}
+                  className="px-4 py-2 rounded-lg bg-white border border-rose-300 text-rose-900 font-semibold hover:bg-rose-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 5. President Account Status */}
         <div className="bg-white p-6 rounded-2xl border border-taras-200 shadow-sm space-y-4">
           <h3 className="text-base font-bold text-taras-900">President Account Authentication</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-medium">

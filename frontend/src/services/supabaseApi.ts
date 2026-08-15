@@ -684,6 +684,24 @@ class SupabaseApiService {
     });
     return Array.from(map.entries()).map(([eventName, stats]) => ({ eventName, ...stats }));
   }
+
+  // ── RESET / PURGE DATA ──
+  public async clearAllStudentsAndODDataAsync(presidentName: string, role: UserRole): Promise<void> {
+    if (role !== 'PRESIDENT') throw new Error('Unauthorized: Only President can clear records.');
+    if (this.db) {
+      // 1. Delete all Daily OD records
+      await this.db.from('daily_od_records').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      // 2. Delete all students
+      await this.db.from('students').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    }
+    // 3. Clear local storage cache
+    localStorage.removeItem('taras_v2_students');
+    localStorage.removeItem('taras_v2_daily_od');
+    localStorage.removeItem('taras_v2_auth_accounts');
+    this.saveAuth([]);
+
+    await this.auditAsync(presidentName, role, 'Cleared Database', 'PURGE', undefined, 'Deleted all student records & daily OD logs');
+  }
 }
 
 export const supabaseApi = new SupabaseApiService();

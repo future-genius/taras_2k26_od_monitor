@@ -62,8 +62,9 @@ interface StudentContextType {
   getStudentODHistory: (studentIdOrRegNo: string) => StudentODHistoryItem[];
   downloadDailyODExcel: (date: string, workName: string) => void;
 
-  // Privacy
+  // Privacy & Reset
   updatePrivacySettings: (settings: Partial<PrivacySettings>) => void;
+  clearAllStudentsAndODData: () => Promise<boolean>;
 }
 
 const StudentContext = createContext<StudentContextType | undefined>(undefined);
@@ -563,6 +564,18 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  const clearAllStudentsAndODData = async (): Promise<boolean> => {
+    try {
+      await supabaseApi.clearAllStudentsAndODDataAsync(user?.name || 'President', role);
+      showToast('All student records and daily OD entries cleared successfully.', 'success');
+      await loadData(false);
+      return true;
+    } catch (err: any) {
+      showToast(err.message || 'Failed to clear data.', 'error');
+      return false;
+    }
+  };
+
   return (
     <StudentContext.Provider value={{
       paginatedStudents,
@@ -599,6 +612,7 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
       getStudentODHistory,
       downloadDailyODExcel,
       updatePrivacySettings,
+      clearAllStudentsAndODData,
     }}>
       {children}
     </StudentContext.Provider>
