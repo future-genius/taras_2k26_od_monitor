@@ -627,6 +627,10 @@ class TarasApiService {
       works: uniqueWorks,
     };
   }
+
+  public getAllDailyRecords(): DailyODRecord[] {
+    return [...this.dailyODRecords];
+  }
 }
 
 export const apiService = new TarasApiService();
