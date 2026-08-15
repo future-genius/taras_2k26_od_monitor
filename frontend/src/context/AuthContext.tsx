@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole } from '../types/user';
 import { PRESIDENT_USER } from '../services/mockData';
 import { apiService } from '../services/api';
+import { supabase, isSupabaseConfigured } from '../services/supabase';
+import { formatDOBToPassword, normalizeDOB } from '../types/student';
 
 interface AuthContextType {
   user: User | null;
@@ -42,40 +44,103 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   const login = async (username: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    const cleanUser = username.trim().toLowerCase();
+    const cleanUser = username.trim();
+    const cleanUserLower = cleanUser.toLowerCase();
     const cleanPass = password.trim();
 
-    // President login
-    if (cleanUser === 'president@taras.edu' || cleanUser === 'president' || cleanUser === 'admin') {
+    // 1. President Login Check
+    if (cleanUserLower === 'president@taras.edu' || cleanUserLower === 'president' || cleanUserLower === 'admin') {
       if (cleanPass === 'president@taras' || cleanPass === 'taras2026' || cleanPass === 'admin') {
         setUser(PRESIDENT_USER);
         setMustChangePassword(false);
         return { success: true };
       }
-      return { success: false, error: 'Invalid President password.' };
+      return { success: false, error: 'Invalid President credentials.' };
     }
 
-    // Student login: username = register number, password = DOB or changed password
-    const account = apiService.verifyLogin(username, password);
-    if (!account) {
-      return { success: false, error: 'Invalid Register Number or Password.' };
+    // 2. Student Login Check (Username = Register Number, Password = DOB DDMMYYYY)
+    // Clean entered password for comparison (e.g. "12-05-2005" -> "12052005")
+    const cleanEnteredDOB = cleanPass.replace(/[-/\.]/g, '');
+
+    // A. Check Supabase cloud database first (handles mass upload from any device)
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data: studentRow, error } = await supabase
+          .from('students')
+          .select('*')
+          .ilike('register_number', cleanUser)
+          .maybeSingle();
+
+        if (studentRow) {
+          const studentDOB = studentRow.date_of_birth || '';
+          const expectedPassword = formatDOBToPassword(studentDOB);
+          const normalizedDOB = normalizeDOB(studentDOB).replace(/[-/\.]/g, '');
+
+          const isPasswordValid =
+            cleanEnteredDOB === expectedPassword ||
+            cleanEnteredDOB === normalizedDOB ||
+            cleanPass === studentDOB;
+
+          if (isPasswordValid) {
+            const studentUser: User = {
+              id: studentRow.id,
+              name: studentRow.name,
+              email: studentRow.email || studentRow.register_number,
+              role: 'STUDENT',
+              registerNumber: studentRow.register_number,
+            };
+            setUser(studentUser);
+            setMustChangePassword(Boolean(studentRow.must_change_password));
+            return { success: true };
+          } else {
+            return {
+              success: false,
+              error: 'Incorrect password. Enter your Date of Birth as DDMMYYYY (e.g. 12052005).',
+            };
+          }
+        }
+      } catch (err) {
+        console.warn('Supabase auth check notice, falling back to local list:', err);
+      }
     }
 
-    const student = apiService.getStudentById(account.studentId);
-    if (!student) {
-      return { success: false, error: 'Student account not found.' };
+    // B. Check local state list as fallback
+    const localStudent = apiService.getAllStudents().find(
+      s => s.registerNumber.toLowerCase() === cleanUserLower
+    );
+
+    if (!localStudent) {
+      return {
+        success: false,
+        error: 'Register Number not found. Only students in the TARAS roster have access.',
+      };
+    }
+
+    const expectedPassword = formatDOBToPassword(localStudent.dateOfBirth);
+    const normalizedDOB = normalizeDOB(localStudent.dateOfBirth).replace(/[-/\.]/g, '');
+
+    const isPasswordValid =
+      cleanEnteredDOB === expectedPassword ||
+      cleanEnteredDOB === normalizedDOB ||
+      cleanPass === localStudent.dateOfBirth;
+
+    if (!isPasswordValid) {
+      return {
+        success: false,
+        error: 'Incorrect password. Enter your Date of Birth as DDMMYYYY (e.g. 12052005).',
+      };
     }
 
     const studentUser: User = {
-      id: account.studentId,
-      name: student.name,
-      email: student.email || student.registerNumber,
+      id: localStudent.id,
+      name: localStudent.name,
+      email: localStudent.email || localStudent.registerNumber,
       role: 'STUDENT',
-      registerNumber: student.registerNumber,
+      registerNumber: localStudent.registerNumber,
     };
 
     setUser(studentUser);
-    setMustChangePassword(account.mustChangePassword);
+    setMustChangePassword(Boolean(localStudent.mustChangePassword));
     return { success: true };
   };
 

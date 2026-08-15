@@ -21,18 +21,24 @@ import { useStudents } from '../../context/StudentContext';
 import { UserRole } from '../../types/user';
 
 export const Sidebar: React.FC = () => {
-  const { user, role, isPresident, logout } = useAuth();
+  const { user, role, isPresident, isStudent, logout } = useAuth();
   const { isSidebarCollapsed, toggleSidebar } = useStudents();
 
-  const navItems = [
-    { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, visible: true },
-    { label: 'Daily OD Marking', path: '/daily-od', icon: CheckSquare, visible: true },
-    { label: 'OD History & Reports', path: '/history', icon: History, visible: true },
-    { label: 'Event & Work Management', path: '/events', icon: Briefcase, visible: true },
-    { label: 'Student Directory', path: '/students', icon: Users, visible: true },
-    { label: 'Audit Logs', path: '/audit-logs', icon: FileSpreadsheet, visible: isPresident },
-    { label: 'Settings', path: '/settings', icon: Settings, visible: isPresident },
-  ];
+  // Navigation scoped by Role: Students only see their OD Portal and Events
+  const navItems = isStudent
+    ? [
+        { label: 'My OD Portal', path: '/dashboard', icon: LayoutDashboard, visible: true },
+        { label: 'Events & Schedule', path: '/events', icon: Briefcase, visible: true },
+      ]
+    : [
+        { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, visible: true },
+        { label: 'Daily OD Marking', path: '/daily-od', icon: CheckSquare, visible: isPresident },
+        { label: 'OD History & Reports', path: '/history', icon: History, visible: true },
+        { label: 'Event & Work Management', path: '/events', icon: Briefcase, visible: true },
+        { label: 'Student Directory', path: '/students', icon: Users, visible: true },
+        { label: 'Audit Logs', path: '/audit-logs', icon: FileSpreadsheet, visible: isPresident },
+        { label: 'Settings', path: '/settings', icon: Settings, visible: isPresident },
+      ];
 
   const getRoleBadge = (userRole: UserRole) => {
     switch (userRole) {
@@ -51,7 +57,7 @@ export const Sidebar: React.FC = () => {
       case 'STUDENT':
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-700 text-slate-300 border border-slate-600">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
             <UserIcon className="w-3 h-3" /> Student
           </span>
         );
@@ -76,7 +82,7 @@ export const Sidebar: React.FC = () => {
                 TARAS 2K26
               </h1>
               <p className="text-[10px] text-taras-400 mt-1 font-medium truncate">
-                Daily OD Monitoring
+                {isStudent ? 'Student Portal' : 'Daily OD Monitoring'}
               </p>
             </div>
           )}
@@ -131,12 +137,12 @@ export const Sidebar: React.FC = () => {
         })}
       </nav>
 
-      {/* User Footer Profile & Logout (No switch role) */}
+      {/* User Footer Profile & Logout */}
       <div className="p-3 border-t border-taras-800 bg-taras-950/60">
         <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-taras-800 text-emerald-400 font-extrabold flex items-center justify-center shrink-0 border border-taras-700 shadow-xs">
-              {user?.name.charAt(0) || 'P'}
+            <div className={`w-8 h-8 rounded-lg ${isStudent ? 'bg-indigo-900 text-indigo-300' : 'bg-taras-800 text-emerald-400'} font-extrabold flex items-center justify-center shrink-0 border border-taras-700 shadow-xs`}>
+              {user?.name.charAt(0) || 'U'}
             </div>
             {!isSidebarCollapsed && (
               <div className="min-w-0">

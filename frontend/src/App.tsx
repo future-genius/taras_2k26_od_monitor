@@ -15,10 +15,21 @@ import { ChangePassword } from './pages/ChangePassword';
 import { EventManagement } from './pages/EventManagement';
 import { NotFound } from './pages/NotFound';
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, mustChangePassword } = useAuth();
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  allowedRoles?: ('PRESIDENT' | 'STAFF' | 'STUDENT')[];
+}
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
+  const { user, role, mustChangePassword } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
   if (mustChangePassword) return <Navigate to="/change-password" replace />;
+
+  // If role is restricted, redirect students safely to their dashboard portal
+  if (allowedRoles && !allowedRoles.includes(role)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return <>{children}</>;
 };
 
@@ -30,19 +41,79 @@ export const AppContent: React.FC = () => {
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/daily-od" element={<ProtectedRoute><DailyOD /></ProtectedRoute>} />
-      <Route path="/history" element={<ProtectedRoute><ODHistory /></ProtectedRoute>} />
-      <Route path="/events" element={<ProtectedRoute><EventManagement /></ProtectedRoute>} />
-      <Route path="/students" element={<ProtectedRoute><Students /></ProtectedRoute>} />
-      <Route path="/students/:id" element={<ProtectedRoute><StudentDetail /></ProtectedRoute>} />
+      {/* Accessible to all authenticated users (President, Staff, Student) */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={['PRESIDENT', 'STAFF', 'STUDENT']}>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/events"
+        element={
+          <ProtectedRoute allowedRoles={['PRESIDENT', 'STAFF', 'STUDENT']}>
+            <EventManagement />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Restricted to President and Staff (Students cannot access) */}
+      <Route
+        path="/daily-od"
+        element={
+          <ProtectedRoute allowedRoles={['PRESIDENT', 'STAFF']}>
+            <DailyOD />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/history"
+        element={
+          <ProtectedRoute allowedRoles={['PRESIDENT', 'STAFF']}>
+            <ODHistory />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/students"
+        element={
+          <ProtectedRoute allowedRoles={['PRESIDENT', 'STAFF']}>
+            <Students />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/students/:id"
+        element={
+          <ProtectedRoute allowedRoles={['PRESIDENT', 'STAFF']}>
+            <StudentDetail />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* President only */}
+      <Route
+        path="/audit-logs"
+        element={
+          <ProtectedRoute allowedRoles={['PRESIDENT']}>
+            <AuditLogs />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute allowedRoles={['PRESIDENT']}>
+            <Settings />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Aliases for compatibility */}
       <Route path="/activities" element={<Navigate to="/events" replace />} />
       <Route path="/reports" element={<Navigate to="/history" replace />} />
-
-      <Route path="/audit-logs" element={<ProtectedRoute><AuditLogs /></ProtectedRoute>} />
-      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>
