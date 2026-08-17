@@ -142,12 +142,14 @@ export const Sidebar: React.FC = () => {
         <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
           <div className="flex items-center gap-2.5 overflow-hidden">
             <div className={`w-8 h-8 rounded-lg ${isStudent ? 'bg-indigo-900 text-indigo-300' : 'bg-taras-800 text-emerald-400'} font-extrabold flex items-center justify-center shrink-0 border border-taras-700 shadow-xs`}>
-              {user?.name.charAt(0) || 'U'}
+              {isPresident ? <ShieldCheck className="w-4 h-4 text-emerald-400" /> : (user?.name.charAt(0) || 'U')}
             </div>
             {!isSidebarCollapsed && (
               <div className="min-w-0">
-                <p className="text-xs font-bold text-white truncate">{user?.name}</p>
-                <div className="mt-0.5">{getRoleBadge(role)}</div>
+                {!isPresident && user?.name && (
+                  <p className="text-xs font-bold text-white truncate">{user.name}</p>
+                )}
+                <div className={!isPresident && user?.name ? "mt-0.5" : ""}>{getRoleBadge(role)}</div>
               </div>
             )}
           </div>

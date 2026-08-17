@@ -357,7 +357,7 @@ export const Settings: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-medium">
             <div className="p-3.5 bg-taras-50 rounded-xl border border-taras-200">
               <span className="text-taras-500 block">Authenticated User</span>
-              <span className="font-bold text-taras-900 mt-0.5 block text-sm">{user?.name || 'President'}</span>
+              <span className="font-bold text-taras-900 mt-0.5 block text-sm">{isPresident ? 'President' : (user?.name || 'President')}</span>
               <span className="text-[11px] text-taras-500 font-mono">president@taras.edu</span>
             </div>
             <div className="p-3.5 bg-taras-50 rounded-xl border border-taras-200">

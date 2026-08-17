@@ -43,7 +43,9 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({ logs }) => {
                     <span>{log.date} {log.time}</span>
                   </div>
                 </td>
-                <td className="px-4 py-3 font-bold text-taras-900">{log.user}</td>
+                <td className="px-4 py-3 font-bold text-taras-900">
+                  {log.userRole === 'PRESIDENT' || log.user === 'Hariharan R' ? 'President' : log.user}
+                </td>
                 <td className="px-4 py-3">
                   <span className="inline-block px-2 py-0.5 rounded font-semibold text-[10px] bg-taras-100 text-taras-800 border border-taras-200">
                     {log.action}

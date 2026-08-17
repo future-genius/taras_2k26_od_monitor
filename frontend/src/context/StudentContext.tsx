@@ -324,9 +324,9 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const addStudent = async (data: Omit<Student, 'id' | 'createdAt' | 'updatedAt' | 'department' | 'mustChangePassword'>): Promise<boolean> => {
     try {
       if (isSupabaseConfigured && supabase) {
-        await supabaseApi.addStudentAsync(data, user?.name || 'President', role);
+        await supabaseApi.addStudentAsync(data, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
       } else {
-        apiService.addStudent(data, user?.name || 'President', role);
+        apiService.addStudent(data, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
       }
       showToast(`Student ${data.name} added successfully.`, 'success');
       await loadData(true);
@@ -334,7 +334,7 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } catch (err: any) {
       // If error, try local
       try {
-        apiService.addStudent(data, user?.name || 'President', role);
+        apiService.addStudent(data, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
         showToast(`Student ${data.name} saved locally.`, 'success');
         await loadData(true);
         return true;
@@ -348,16 +348,16 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const updateStudent = async (id: string, updates: Partial<Student>): Promise<boolean> => {
     try {
       if (isSupabaseConfigured && supabase) {
-        await supabaseApi.updateStudentAsync(id, updates, user?.name || 'President', role);
+        await supabaseApi.updateStudentAsync(id, updates, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
       } else {
-        apiService.updateStudent(id, updates, user?.name || 'President', role);
+        apiService.updateStudent(id, updates, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
       }
       showToast('Student updated successfully.', 'success');
       await loadData(true);
       return true;
     } catch (err: any) {
       try {
-        apiService.updateStudent(id, updates, user?.name || 'President', role);
+        apiService.updateStudent(id, updates, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
         showToast('Student updated locally.', 'success');
         await loadData(true);
         return true;
@@ -371,10 +371,10 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const deactivateStudent = async (id: string): Promise<boolean> => {
     try {
       if (isSupabaseConfigured && supabase) {
-        const s = await supabaseApi.deactivateStudentAsync(id, user?.name || 'President', role);
+        const s = await supabaseApi.deactivateStudentAsync(id, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
         showToast(`${s.name} deactivated.`, 'success');
       } else {
-        const s = apiService.deactivateStudent(id, user?.name || 'President', role);
+        const s = apiService.deactivateStudent(id, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
         showToast(`${s.name} deactivated.`, 'success');
       }
       await loadData(true);
@@ -393,18 +393,18 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const validRows = preview.rows.filter(r => r.isValid && !r.isDuplicate);
       if (isSupabaseConfigured && supabase) {
-        const result = await supabaseApi.bulkImportStudentsAsync(validRows, user?.name || 'President', role);
+        const result = await supabaseApi.bulkImportStudentsAsync(validRows, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
         showToast(`Import complete: ${result.added} students added.`, 'success');
         await loadData(true);
         return { added: result.added, failed: result.failed };
       } else {
-        const result = apiService.confirmImport(preview, user?.name || 'President', role);
+        const result = apiService.confirmImport(preview, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
         showToast(`Import complete: ${result.added} students added.`, 'success');
         await loadData(true);
         return result;
       }
     } catch (err: any) {
-      const result = apiService.confirmImport(preview, user?.name || 'President', role);
+      const result = apiService.confirmImport(preview, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
       showToast(`Import saved locally: ${result.added} students added.`, 'success');
       await loadData(true);
       return result;
@@ -415,17 +415,17 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const addManagedEvent = async (data: Omit<TarasEventItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<boolean> => {
     try {
       if (isSupabaseConfigured && supabase) {
-        const created = await supabaseApi.addEventAsync(data, user?.name || 'President', role);
+        const created = await supabaseApi.addEventAsync(data, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
         showToast(`Event "${created.name}" created successfully.`, 'success');
       } else {
-        const created = apiService.addManagedEvent(data, user?.name || 'President', role);
+        const created = apiService.addManagedEvent(data, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
         showToast(`Event "${created.name}" created successfully.`, 'success');
       }
       await loadData(true);
       return true;
     } catch (err: any) {
       try {
-        const created = apiService.addManagedEvent(data, user?.name || 'President', role);
+        const created = apiService.addManagedEvent(data, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
         showToast(`Event "${created.name}" saved locally.`, 'success');
         await loadData(true);
         return true;
@@ -439,17 +439,17 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const updateManagedEvent = async (id: string, updates: Partial<TarasEventItem>): Promise<boolean> => {
     try {
       if (isSupabaseConfigured && supabase) {
-        const updated = await supabaseApi.updateEventAsync(id, updates, user?.name || 'President', role);
+        const updated = await supabaseApi.updateEventAsync(id, updates, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
         showToast(`Event "${updated.name}" updated successfully.`, 'success');
       } else {
-        const updated = apiService.updateManagedEvent(id, updates, user?.name || 'President', role);
+        const updated = apiService.updateManagedEvent(id, updates, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
         showToast(`Event "${updated.name}" updated successfully.`, 'success');
       }
       await loadData(true);
       return true;
     } catch (err: any) {
       try {
-        const updated = apiService.updateManagedEvent(id, updates, user?.name || 'President', role);
+        const updated = apiService.updateManagedEvent(id, updates, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
         showToast(`Event "${updated.name}" updated locally.`, 'success');
         await loadData(true);
         return true;
@@ -463,16 +463,16 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const deleteManagedEvent = async (id: string): Promise<boolean> => {
     try {
       if (isSupabaseConfigured && supabase) {
-        await supabaseApi.deleteEventAsync(id, user?.name || 'President', role);
+        await supabaseApi.deleteEventAsync(id, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
       } else {
-        apiService.deleteManagedEvent(id, user?.name || 'President', role);
+        apiService.deleteManagedEvent(id, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
       }
       showToast('Event deleted successfully.', 'success');
       await loadData(true);
       return true;
     } catch (err: any) {
       try {
-        apiService.deleteManagedEvent(id, user?.name || 'President', role);
+        apiService.deleteManagedEvent(id, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
         showToast('Event deleted locally.', 'success');
         await loadData(true);
         return true;
@@ -502,11 +502,11 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
           workName,
           records,
           allStudentsRef.current,
-          user?.name || 'President',
+          role === 'PRESIDENT' ? 'President' : (user?.name || 'President'),
           role
         );
       } else {
-        apiService.saveDailyODRecords(date, workName, records, user?.name || 'President', role);
+        apiService.saveDailyODRecords(date, workName, records, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
       }
       const odCount = records.filter(r => r.status === 'OD').length;
       showToast(`Saved OD records: ${odCount} marked OD.`, 'success');
@@ -514,7 +514,7 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return true;
     } catch (err: any) {
       try {
-        apiService.saveDailyODRecords(date, workName, records, user?.name || 'President', role);
+        apiService.saveDailyODRecords(date, workName, records, role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
         const odCount = records.filter(r => r.status === 'OD').length;
         showToast(`Saved OD records locally: ${odCount} marked OD.`, 'success');
         await loadData(true);
@@ -566,7 +566,7 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const clearAllStudentsAndODData = async (): Promise<boolean> => {
     try {
-      await supabaseApi.clearAllStudentsAndODDataAsync(user?.name || 'President', role);
+      await supabaseApi.clearAllStudentsAndODDataAsync(role === 'PRESIDENT' ? 'President' : (user?.name || 'President'), role);
       showToast('All student records and daily OD entries cleared successfully.', 'success');
       await loadData(false);
       return true;
